@@ -8,6 +8,9 @@ class Slot < ApplicationRecord
   #
   # Validations
   #
+  validates :number, presence: true, uniqueness: { scope: :parking_lot_id }
+  validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :status, presence: true, inclusion: { in: %w[available occupied] }
   validate :check_available_slots, on: :create
 
   private
