@@ -11,6 +11,7 @@ class User < ApplicationRecord
   # Associations
   # 
   belongs_to :role, optional: true
+  has_many :reservations, dependent: :destroy
 
   #
   # Scopes

@@ -9,10 +9,26 @@ class Slot < ApplicationRecord
   validates :start_hour, :end_hour, presence: true
   validate :end_time_after_start_time
 
+  # 
+  # Associations
+  # 
+  has_many :reservations
+
   #
   # Scopes
   #
   scope :available, -> { where(status: 'available') }
+  scope :by_features, ->(features) {
+    conditions = []
+
+    features.each do |key, value|
+      if value.present?
+        conditions << "features @> jsonb_build_object(?, ?)"
+      end
+    end
+
+    where(conditions.join(" AND "), *features.reject { |_k, v| v.blank? }.flatten) if conditions.any?
+  }
 
   private
 

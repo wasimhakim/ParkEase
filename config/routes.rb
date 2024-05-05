@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :reservations
   resources :users
   resources :parking_working_hours
   resources :slots

@@ -3,9 +3,19 @@ class SlotsController < ApplicationController
 
   # GET /slots
   def index
-    @slots = Slot.all.order(:number)
+    date = params[:date] || Date.today
+    hour = params[:hour] || Time.now.hour.to_s + ":00"
+    
+    features = {}
+    features[:car_type] = params[:car_type] if params[:car_type].present?
+    features[:has_shade] = params[:has_shade].present?
+    features[:ev_charging] = params[:ev_charging].present?
+    features[:disabled_people_only] = params[:disabled_people_only].present?
 
-    render json: SlotSerializer.new(@slots).serializable_hash[:data].map{ |slot| slot[:attributes] }
+    @slots = Slot.all.order(:number)
+    @slots = @slots.by_features(features) if features.any?
+
+    render json: SlotSerializer.new(@slots, { params: { date: date, hour: hour } }).serializable_hash[:data].map{ |slot| slot[:attributes] }
   end
 
   # GET /slots/1
