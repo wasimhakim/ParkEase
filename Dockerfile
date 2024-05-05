@@ -1,34 +1,35 @@
-FROM ruby:3.1.2
+# Make sure it matches the Ruby version in .ruby-version and Gemfile
+ARG RUBY_VERSION=3.2.0
+FROM ruby:$RUBY_VERSION
 
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
+# Install libvips for Active Storage preview support
+RUN apt-get update -qq && \
+    apt-get install -y build-essential libvips bash bash-completion libffi-dev tzdata postgresql nodejs npm yarn && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man
 
-# Set an environment variable where the Rails app is installed to inside of Docker image:
-ENV RAILS_ROOT /var/www/parkease
-RUN mkdir -p $RAILS_ROOT
+# Rails app lives here
+WORKDIR /rails
 
-# Set working directory, where the commands will be ran:
-WORKDIR $RAILS_ROOT
+# Set production environment
+ENV RAILS_LOG_TO_STDOUT="1" \
+    RAILS_SERVE_STATIC_FILES="true" \
+    RAILS_ENV="production" \
+    BUNDLE_WITHOUT="development"
 
-#DB ARG
+# Install application gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
 
-ARG DB_PASSWD
-
-ARG ENV_RAILS
-
-ENV EMERALDS_API_DATABASE_PASSWORD=${DB_PASSWD}
-# Setting env up
-ENV RAILS_ENV=${ENV_RAILS}
-ENV RACK_ENV=${ENV_RAILS}
-
-# Adding gems
-COPY Gemfile Gemfile
-COPY Gemfile.lock Gemfile.lock
-RUN bundle install --jobs 20 --retry 5 --without development test
-
-# Adding project files
+# Copy application code
 COPY . .
 
-RUN ln -sf /dev/stdout /var/www/parkease/log/production.log
+# Precompile bootsnap code for faster boot times
+RUN bundle exec bootsnap precompile --gemfile app/ lib/
 
+# Entrypoint prepares the database.
+ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+
+# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+CMD ["./bin/rails", "server"]
