@@ -27,7 +27,6 @@ RUN bundle install --jobs 20 --retry 5 --without development test
 
 # Adding project files
 COPY . .
-RUN bundle exec rake assets:precompile
 
 RUN ln -sf /dev/stdout /var/www/parkease/log/production.log
 
