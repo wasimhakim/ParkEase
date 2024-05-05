@@ -1,7 +1,6 @@
 class CreateSlots < ActiveRecord::Migration[7.0]
   def change
     create_table :slots do |t|
-      t.references :parking_lot
       t.integer :number
       t.string :status
       t.jsonb :features

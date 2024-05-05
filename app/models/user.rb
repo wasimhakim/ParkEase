@@ -6,4 +6,22 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: self
+
+  # 
+  # Associations
+  # 
+  belongs_to :role, optional: true
+
+  #
+  # Scopes
+  #
+  scope :admins, -> { where(role: Role.find_by(name: Role::ADMIN_ROLE)) }
+  scope :customers, -> { where(role: [Role.find_by(name: Role::CUSTOMER_ROLE), nil]) }
+
+  # 
+  # methods
+  # 
+  def admin?
+    role&.name == Role::ADMIN_ROLE
+  end
 end

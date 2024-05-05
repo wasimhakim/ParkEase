@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
+  resources :users
+  resources :parking_working_hours
   resources :slots
-  resources :parking_lots
+  resources :users, only: :index
   devise_for :users, path: '', path_names: {
     sign_in: 'login',
     sign_out: 'logout',

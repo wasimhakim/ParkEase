@@ -1,23 +1,24 @@
 class Slot < ApplicationRecord
 
-  # 
-  # Associations
-  #
-  belongs_to :parking_lot
-
   #
   # Validations
   #
-  validates :number, presence: true, uniqueness: { scope: :parking_lot_id }
+  validates :number, presence: true, uniqueness: true
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :status, presence: true, inclusion: { in: %w[available occupied] }
-  validate :check_available_slots, on: :create
+  validates :status, presence: true, inclusion: { in: %w[available unavailable] }
+  validates :start_hour, :end_hour, presence: true
+  validate :end_time_after_start_time
+
+  #
+  # Scopes
+  #
+  scope :available, -> { where(status: 'available') }
 
   private
 
-  def check_available_slots
-    if parking_lot && parking_lot.total_slots <= parking_lot.slots.count
-      errors.add(:base, 'No available slots in the parking lot')
-    end
+  def end_time_after_start_time
+    return if start_hour.blank? || end_hour.blank?
+
+    errors.add(:end_hour, "must be after the start time") if end_hour <= start_hour
   end
 end

@@ -3,14 +3,14 @@ class SlotsController < ApplicationController
 
   # GET /slots
   def index
-    @slots = Slot.all
+    @slots = Slot.all.order(:number)
 
-    render json: @slots
+    render json: SlotSerializer.new(@slots).serializable_hash[:data].map{ |slot| slot[:attributes] }
   end
 
   # GET /slots/1
   def show
-    render json: @slot
+    render json: SlotSerializer.new(@slot).serializable_hash[:data][:attributes]
   end
 
   # POST /slots
@@ -18,7 +18,7 @@ class SlotsController < ApplicationController
     @slot = Slot.new(slot_params)
 
     if @slot.save
-      render json: @slot, status: :created, location: @slot
+      render json: { status: :created, data: SlotSerializer.new(@slot).serializable_hash[:data][:attributes] }
     else
       render json: @slot.errors, status: :unprocessable_entity
     end
@@ -46,6 +46,9 @@ class SlotsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def slot_params
-      params.require(:slot).permit(:parking_lot_id, :number, :status, :price, features: {})
+      params.require(:slot).permit(
+        :number, :status, :price, :start_hour, :end_hour, 
+        :cancellation_fee_percentage, :cancellation_time_frame_hours, features: {}
+      )
     end
 end
