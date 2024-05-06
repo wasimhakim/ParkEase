@@ -11,14 +11,14 @@ class SlotSerializer
   end
 
   attribute :status do |object, params|
-    if object.status == 'unavailable'
-      'unavailable'
+    if object.status == Slot::UNAVAILABLE
+      Slot::UNAVAILABLE
     else
       reservations = object.reservations.for_date_and_hour(params[:date], params[:hour])
       if reservations.empty?
-        'available'
+        Slot::AVAILABLE
       else
-        'occupied'
+        Slot::OCCUPIED
       end
     end
   end

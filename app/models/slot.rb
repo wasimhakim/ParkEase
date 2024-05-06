@@ -1,11 +1,17 @@
 class Slot < ApplicationRecord
+  # 
+  # Constants
+  # 
+  AVAILABLE = 'available'
+  UNAVAILABLE = 'unavailable'
+  OCCUPIED = 'occupied'
 
   #
   # Validations
   #
   validates :number, presence: true, uniqueness: true
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :status, presence: true, inclusion: { in: %w[available unavailable] }
+  validates :status, presence: true, inclusion: { in: [AVAILABLE, UNAVAILABLE] }
   validates :start_hour, :end_hour, presence: true
   validate :end_time_after_start_time
 
@@ -17,7 +23,10 @@ class Slot < ApplicationRecord
   #
   # Scopes
   #
-  scope :available, -> { where(status: 'available') }
+  scope :available, -> { where(status: AVAILABLE) }
+  scope :in_start_end_hours, ->(hour) {
+    where("start_hour <= ? AND end_hour > ?", hour, hour)
+  }
   scope :by_features, ->(features) {
     conditions = []
 

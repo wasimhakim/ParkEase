@@ -13,6 +13,7 @@ class SlotsController < ApplicationController
     features[:disabled_people_only] = params[:disabled_people_only].present?
 
     @slots = Slot.all.order(:number)
+    @slots = @slots.in_start_end_hours(hour) if hour.present? && !current_user&.admin?
     @slots = @slots.by_features(features) if features.any?
 
     render json: SlotSerializer.new(@slots, { params: { date: date, hour: hour } }).serializable_hash[:data].map{ |slot| slot[:attributes] }
